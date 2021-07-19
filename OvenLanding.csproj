@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <LangVersion>9</LangVersion>
+        <Company>ООО "АЭМЗ"</Company>
+        <Product>Посад печи</Product>
+        <AssemblyVersion>1.0</AssemblyVersion>
+        <NeutralLanguage>ru-RU</NeutralLanguage>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NLog" Version="4.7.10" />
+      <PackageReference Include="Npgsql" Version="5.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="net-3.1.zip" />
+    </ItemGroup>
+
+</Project>

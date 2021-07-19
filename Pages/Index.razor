@@ -1,0 +1,300 @@
+﻿@page "/"
+@inject LandingService _landingService
+@inject IJSRuntime JSRuntime;
+
+<div class="row">
+    <h1 style="padding-left: 15px;">Посад печи</h1>
+    <div style="font-weight: 500; border: 1px solid @_semaphoreColor; border-radius: 50px; background-color: @_semaphoreColor; height: 50%; width: 10px; padding-left: 25px; margin-left: 15px; margin-top: 15px;">&nbsp;</div>
+    <div class="spinner-border" role="status" style="color: #1861ac; padding-left: 25px; margin-left: 15px; margin-top: 10px; visibility: @_loading;">
+        <span class="sr-only">&nbsp;</span>
+    </div>
+    <div class="messages @_messageClass" style="display: @_messageVisible">@_message</div>
+</div>
+
+<div id="queue">
+    <table style="width: 1620px;">
+        @* <div class="h3">Очередь заготовок на посаде печи</div> *@
+        <tr>
+            <td>
+                <table style="width: 1614px;">
+                    <tr>
+                        @* <th scope="col">№<br />посада</th> *@
+                        <th scope="col" style="vertical-align: middle; width: 93px;">№<br/>плавки</th>
+                        <th scope="col" style="vertical-align: middle; width: 93px;">Профиль</th>
+                        @* <th scope="col" style="vertical-align: middle; width: 100px;">Диаметр<br />профиля</th> *@
+                        <th scope="col" style="vertical-align: middle; width: 138px;">Марка<br />стали</th>
+                        <th scope="col" style="vertical-align: middle; width: 106px;">Код<br />продукции</th>
+                        <th scope="col" style="vertical-align: middle; width: 118px;">Сечение<br />заготовки</th>
+                        <th scope="col" style="vertical-align: middle; width: 137px;">Кол-во<br />заготовок</th>
+                        <th scope="col" style="vertical-align: middle; width: 137px;">Взвешено<br />заготовок</th>
+                        @* <th scope="col" style="vertical-align: middle; width: 114px;">Взвешено<br />бунтов</th> *@
+                        <th scope="col" style="vertical-align: middle; width: 130px;">Общий вес<br />заготовок</th>
+                        <th scope="col" style="vertical-align: middle; width: 125px;">Вес одной<br />заготовки</th>
+                        <th scope="col" style="vertical-align: middle; width: 132px;">Длина (мм)<br />заготовки</th>
+                        <th scope="col" style="vertical-align: middle; width: 106px;">Количество</th>
+                        <th scope="col" style="vertical-align: middle; width: 106px;">Порядок</th>
+                        <th scope="col" style="vertical-align: middle; width: 96px;">Редактор</th>
+                        <th scope="col" style="vertical-align: middle; width: 97px;">Удалить</th>
+                        @* <th scope="col" style="vertical-align: middle; width: 15px;">&nbsp;</th> *@
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="width: 1615px; height: 400px; overflow: auto;">
+                    <table class="table table-hover">
+                        <tbody>
+                        @foreach (LandingData item in _landed)
+                        {
+                            _selectRow = item.WeightedIngots > 0 ? _selectedColor : "none";
+
+                            <tr style="background-color: @_selectRow;">
+                                @* <th scope="row">@item.LandingId</th> *@
+                                <th scope="row" style="width: 93px;">@item.MeltNumber</th>
+                                @* <td style="width: 88px;">@item.ProductProfile</td> *@
+                                @* if (item.ProductProfile == "Ø")
+                                {
+                                    <td style="width: 100px;">@item.ProductProfile @item.Diameter.ToString(CultureInfo.CurrentCulture)</td>
+                                }
+                                else
+                                {
+                                    <td style="width: 100px;">@item.ProductProfile @item.Diameter.ToString("F0")</td>
+                                } *@
+                                
+                                <td style="width: 93px;">@item.DisplayProfile</td>
+                                
+                                <td style="width: 138px;">@item.SteelMark</td>
+                                <td style="width: 106px;">@item.ProductCode</td>
+                                <td style="width: 118px;">@item.IngotProfile</td>
+                                <td style="width: 137px;">@item.IngotsCount</td>
+                                <td style="width: 137px;">@item.WeightedIngots</td>
+                                @* <td style="width: 114px;">@item.Weighted</td> *@
+                                <td style="width: 130px;">@item.WeightAll</td>
+                                <td style="width: 125px;">@item.WeightOne</td>
+                                <td style="width: 132px;">@item.IngotLength</td>
+                                <td style="width: 106px; text-align: center">
+                                    @if (_countingButtonsState)
+                                    {
+                                        <button class="btn btn-primary" @onclick="@(() => IncLanding(item.LandingId))">+</button>
+                                        <button class="btn btn-primary" @onclick="@(() => DecLanding(item.LandingId))">&minus;</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-primary" disabled @onclick="@(() => IncLanding(item.LandingId))">+</button>
+                                        <button class="btn btn-primary" disabled @onclick="@(() => DecLanding(item.LandingId))">&minus;</button>
+                                    }
+
+                                    @* @if (item.IngotsCount > item.WeightedIngots) *@
+                                    @* { *@
+                                    @*     <button class="btn btn-primary" @onclick="@(() => DecLanding(item.LandingId))">&minus;</button> *@
+                                    @* } *@
+                                    @* else *@
+                                    @* { *@
+                                    @* <button class="btn btn-primary" disabled @onclick="@(() => DecLanding(item.LandingId))">&minus;</button> *@
+                                    @* } *@
+                                </td>
+                                @if (!item.CanBeDeleted)
+                                {
+                                    <td style="width: 106px;">&nbsp;</td>
+                                }
+                                else
+                                {
+                                    <td style="width: 106px; text-align: center">
+                                        @if (_movingButtonsState)
+                                        {
+                                            <button class="btn btn-primary" @onclick="@(() => MoveUp(item.LandingId))">&uarr;</button>
+                                            <button class="btn btn-primary" @onclick="@(() => MoveDown(item.LandingId))">&darr;</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-primary" disabled @onclick="@(() => MoveUp(item.LandingId))">&uarr;</button>
+                                            <button class="btn btn-primary" disabled @onclick="@(() => MoveDown(item.LandingId))">&darr;</button>
+                                        }
+                                    </td>
+                                }
+
+                                <td style="width: 96px; text-align: center">
+                                    <button class="btn btn-primary" @onclick="@(() => EditLanding(item.LandingId))">&#128736;</button>
+                                </td>
+                                
+                                <td style="width: 97px; text-align: center">
+                                    <button class="btn btn-primary" @onclick="@(() => Remove(item.LandingId))">&times;</button>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div id="scales">
+    @* <div class="h3">Заготовка на весах</div> *@
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 93px;">№<br/>плавки</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 93px;">Профиль</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 138px;">Марка<br/>стали</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 106px;">Код<br />продукции</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 118px;">Сечение<br/>заготовки</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 137px;">Кол-во<br/>заготовок</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 137px;">Взвешено<br />заготовок</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 130px;">№<br/>заготовки</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 125px;">Вес<br/>заготовки</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 132px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 96px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 97px;">&nbsp;</th>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="height: 70px; overflow: auto;">
+                    <table class="table table-hover">
+                        <tbody>
+                        @foreach (CoilData item in _scaled)
+                        {
+                            <tr>
+                                <th scope="row" style="vertical-align: middle; width: 93px;">@item.MeltNumber</th>
+                                <td style="vertical-align: middle; width: 93px;">@item.DisplayDiameter</td>
+                                <td style="vertical-align: middle; width: 138px;">@item.SteelMark</td>
+                                <td style="vertical-align: middle; width: 106px;">@item.ProductionCode</td>
+                                <td style="vertical-align: middle; width: 118px;">@item.IngotProfile</td>
+                                <td style="vertical-align: middle; width: 137px;">@item.IngotsCount</td>
+                                <td style="vertical-align: middle; width: 137px;">@item.IngotsWeighted</td>
+                                <td style="vertical-align: middle; width: 130px;">@item.IngotPos</td>
+                                <td style="vertical-align: middle; width: 125px;">@item.WeightFact</td>
+                                <td style="text-align: center; vertical-align: middle; width: 132px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 96px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 97px;">&nbsp;</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div id="owen">
+    @* <div class="h3">Посады в печи</div> *@
+    <table>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <th scope="col" style="vertical-align: middle; width: 93px;">№<br/>плавки</th>
+                        <th scope="col" style="vertical-align: middle; width: 93px;">Профиль</th>
+                        <th scope="col" style="vertical-align: middle; width: 138px;">Марка<br/>стали</th>
+                        <th scope="col" style="vertical-align: middle; width: 106px;">Код<br />продукции</th>
+                        <th scope="col" style="vertical-align: middle; width: 118px;">Сечение<br/>заготовки</th>
+                        <th scope="col" style="vertical-align: middle; width: 137px;">Кол-во<br/>заготовок</th>
+                        <th scope="col" style="vertical-align: middle; width: 137px;">Взвешено<br />заготовок</th>
+                        <th scope="col" style="vertical-align: middle; width: 130px;">Кол-во<br/>в печи</th>
+                        <th scope="col" style="vertical-align: middle; width: 125px;">Кол-во<br/>выданных</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 132px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 96px;">Редактор</th>
+                        <th scope="col" style="text-align: center; vertical-align: middle; width: 97px;">&nbsp;</th>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="height: 170px; overflow: auto;">
+                    <table class="table table-hover">
+                        <tbody>
+                        @foreach (IngotsInOven item in _meltsInOven)
+                        {
+                            _outFromOven = item.IngotsCountOutOven > 0 ? _selectedColor : "none";
+                            <tr style="background-color: @_outFromOven;">
+                                <th scope="row" style="vertical-align: middle; width: 93px;">@item.MeltNumber</th>
+                                <td style="vertical-align: middle; width: 93px;">@item.DisplayDiameter</td>
+                                <td style="vertical-align: middle; width: 138px;">@item.SteelMark</td>
+                                <td style="vertical-align: middle; width: 106px;">@item.ProductCode</td>
+                                <td style="vertical-align: middle; width: 118px;">@item.IngotProfile</td>
+                                <td style="vertical-align: middle; width: 137px;">@item.IngotsCount</td>
+                                <td style="vertical-align: middle; width: 137px;">@item.IngotsWeighted</td>
+                                <td style="vertical-align: middle; width: 130px;">@item.IngotsCountInOven</td>
+                                <td style="vertical-align: middle; width: 125px;">@item.IngotsCountOutOven</td>
+                                <td style="text-align: center; vertical-align: middle; width: 132px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 106px;">&nbsp;</td>
+                                <td style="text-align: center; vertical-align: middle; width: 96px;">
+                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg" @onclick="@(() => { MeltRemap(item.LandingId); })">&#10050;</button>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle; width: 97px;">&nbsp;</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade bd-example-modal-lg" id="staticBackdrop" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Переназначение заготовок плавки №@_remap.Landing.MeltNumber [@_remap.Landing.IngotsCount]</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="_remap">
+                    <table>
+                        <tr>
+                            <td>Первая заготовка</td>
+                            <td><InputNumber id="startPos" class="form-control" placeholder="начало" @bind-Value="_remap.StartPos"/></td>
+                            <td>Заказчик</td>
+                            <td>
+                                <InputSelect class="form-control" @bind-Value="_remap.Landing.Customer">
+                                    @foreach (string customer in _customers)
+                                    {
+                                        <option value="@customer">@customer</option>
+                                    }
+                                </InputSelect>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Последняя заготовка</td>
+                            <td><InputNumber id="endPos" class="form-control" placeholder="окончание" @bind-Value="_remap.EndPos"/></td>
+                            <td>Стандарт</td>
+                            <td>
+                                <InputSelect class="form-control" @bind-Value="_remap.Landing.Standart">
+                                    @foreach (string standard in _standards)
+                                    {
+                                        <option value="@standard">@standard</option>
+                                    }
+                                </InputSelect> 
+                            </td>
+                        </tr>
+                    </table>
+                </EditForm>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" @onclick="@(Remap)">Назначить</button>
+            </div>
+        </div>
+    </div>
+</div>

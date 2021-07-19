@@ -1,0 +1,41 @@
+﻿@page "/"
+@namespace OvenLanding.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>АРМ посада печи</title>
+    <base href="~/"/>
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css"/>
+    <link href="css/site.css" rel="stylesheet"/>
+</head>
+<body>
+<app>
+    <component type="typeof(App)" render-mode="ServerPrerendered"/>
+</app>
+
+<div id="blazor-error-ui">
+    <environment include="Staging,Production">
+        Потеряно соединение с серверов. Для продолжения работы необходимо обновить страницу в браузере.
+    </environment>
+    <environment include="Development">
+        На сервере возникла ошибка. Подробности смотри в инструментах разработчкика.
+    </environment>
+    <a href="" class="reload">Обновить</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<script src="_framework/blazor.server.js"></script>
+<script src="js/jquery.min.js"></script>
+<script src="js/popper-1.16.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+
+<script src="js/js_utils.js"></script>
+</body>
+</html>
