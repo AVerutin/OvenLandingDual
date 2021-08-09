@@ -17,6 +17,8 @@ namespace OvenLanding.Data
         private readonly DbQueries _dbQueries;
         private readonly int _timeOutP;
         private readonly int _timeOutT;
+        private readonly bool _enabledT;
+        private readonly bool _enabledP;
 
         /// <summary>
         /// Конструктор создания подключения к базе данных
@@ -39,6 +41,7 @@ namespace OvenLanding.Data
             _timeOutP = int.Parse(config.GetSection("DBConnection:Timeout").Value);
             string sslMode = config.GetSection("DBConnection:SslMode").Value;
             string trustServerCert = config.GetSection("DBConnection:TrustServerCertificate").Value;
+            _enabledP = bool.Parse(config.GetSection("DBConnection:Enabled").Value);
             
             // Настройки для подключения к базе данных на тесте
             string hostT = config.GetSection("DBTest:Host").Value;
@@ -49,6 +52,7 @@ namespace OvenLanding.Data
             _timeOutT = int.Parse(config.GetSection("DBTest:Timeout").Value);
             string sslModeT = config.GetSection("DBTest:SslMode").Value;
             string trustServerCertT = config.GetSection("DBTest:TrustServerCertificate").Value;
+            _enabledT = bool.Parse(config.GetSection("DBTest:Enabled").Value);
             
             // Строка подключения для базы данных на проде
             _connectionString =
@@ -1781,6 +1785,12 @@ namespace OvenLanding.Data
         private DataTable GetDataTable(string query, bool testDb=false)
         {
             DataTable result = new DataTable();
+
+            if (testDb && !_enabledT)
+                return result;
+
+            if (!testDb && !_enabledP)
+                return result;
 
             try
             {
